@@ -1,0 +1,1319 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>SavvyShapes</title>
+<style type="text/css">
+select,input,body{
+font-family: Tahoma, Geneva, sans-serif;
+font-size:10pt;
+}
+body{
+margin:0;
+margin-bottom:30px
+}
+h1,h2,h3,h4{
+margin-top: 0;
+}
+h3,h4{
+margin-bottom: 5px;
+}
+a{
+text-decoration: none;
+}
+
+.sup{
+font-size: 50%;
+vertical-align: super;
+}
+.small{
+font-size: 70%;
+}
+.disabled{
+background-color: #EEE;
+}
+
+#container{
+text-align: center;
+}
+#content{
+text-align: left;
+margin-left: auto ;
+margin-right: auto ;
+width: 900px;
+position: relative;
+background-color:#FFF;
+border:solid;
+border-top:none;
+border-color:#DDD;
+}
+#header, #courses, #goals, #calculate, #results, #progress, #footer{
+padding: 10px;
+}
+
+#header{
+text-align: center;
+padding-bottom:30px;
+}
+.headerLeft{
+position:absolute;
+width:200px;
+text-align:right;
+right:10px;
+}
+#subtitle{
+position:absolute;
+width:900px;
+left:0;
+}
+#helpTag{
+position:absolute;
+width:200px;
+text-align:left;
+left:10px;
+}
+#conciseTag, #verboseTag{
+position:absolute;
+width:200px;
+text-align:right;
+right:10px;
+}
+#verboseTag{
+display:none;
+}
+
+#courses{
+background-color:#EEE;
+}
+#goals{
+background-color:#DDD;
+}
+.blurb{
+}
+#goalData, #courseData{
+height: 200px;
+width: 510px;
+}
+.sidebar{
+float: right;
+width: 350px;
+height: 200px;
+}
+#courseList, #goalList{
+line-height:1.2;
+white-space:nowrap;
+overflow: auto;
+margin-bottom: 10px;
+margin-top: 5px;
+}
+#courseList{
+height: 100px;
+}
+#goalList{
+height: 140px;
+}
+#courseList span {
+width: 70px;
+display: inline-block;
+}
+#goalList input {
+width:50px;
+padding:0;
+margin:0;
+}
+.disabledOpt {
+color:#666;
+}
+.goalindent{
+width: 60px;
+display: inline-block;
+font-size: 70%;
+}
+
+#calculate{
+text-align: center;
+}
+
+#results{
+}
+#resultsGrid{
+}
+.timetable, .miniTimetable{
+border-collapse:collapse;
+}
+.timetable{
+margin-bottom:70px;
+}
+.timetable tr{
+height:40px;
+}
+.timetable td{
+border:solid;
+border-width:1px;
+border-color:#CCC;
+font-size:70%;
+padding:5px;
+width:80px;
+text-align:center;
+}
+.dayLabel{
+height:10px!important;
+}
+.dayLabel td{
+padding:5px!important;
+vertical-align:bottom;
+border:none!important;
+}
+.timeLabel{
+padding:5px!important;
+border:none!important;
+vertical-align:bottom;
+text-align:right!important;
+width:15px!important;
+}
+.timeLabel span{
+position:relative;
+bottom:-10px;
+}
+.clash{
+background-color:#D75;
+}
+#resultsBar{
+float:right;
+width:350px;
+}
+#resultsList{
+white-space:nowrap;
+overflow: auto;
+margin-bottom:5px;
+}
+.resultsIndent{
+width: 200px;
+display: inline-block;
+}
+.resultsIndent2{
+width: 80px;
+display: inline-block;
+}
+#totalScore{
+font-weight:bold;
+}
+#gridList{
+padding:10px;
+background-color:#EEE;
+margin:-10px;
+}
+.miniGrid{
+display:inline-block;
+*display: inline;
+width:130px;
+margin-left:5px;
+margin-right:5px;
+text-align:center;
+padding-bottom:10px;
+}
+#gridList a{
+color:black;
+cursor:pointer;
+}
+a:visited {
+outline: none;
+}
+#gridContainer{
+margin-top:20px;
+margin-left:auto;
+margin-right:auto;
+text-align:center;
+}
+.miniTimetable{
+margin-left:auto;
+margin-right:auto;
+margin-top:10px;
+}
+.miniTimetable td{
+border:solid;
+border-width:1px;
+border-color:#CCC;
+width:20px;
+height:10px;
+padding:0;
+}
+.filled{
+background-color:#CCC;
+}
+.unfilled{
+background-color:white;
+}
+
+#progress{
+}
+
+#footer{
+text-align: center;
+}
+
+#courses, #goals, #calculate, #results, #progress, #footer{
+display: none;
+}
+</style>
+<!--[if IE]> 
+<style type="text/css">
+#goalList input {
+margin-top:-1;
+margin-bottom:-1;
+height:20px;
+}
+</style>
+<![endif]-->
+
+<script type="text/javascript">
+//some global variables:
+{
+var ajaxTimeout = null;
+var httpObject = null;
+var suppressErrors = true;
+var courses;
+var goals;
+var helpWindow;
+var courseDataValid=true;
+var goalDataValid=true;
+var reqUnits=24;
+var courseSets;
+var currCourseSet;
+var DHS_nodeProgress;
+var currDepth;
+var grid;
+var choicesArray=[];
+var chunkSize=100;
+var processor=null;
+var bestSolns;
+var numSolns=6;
+var numCalcs;
+var doneCalcs;
+var prohibitClashes=false;
+}
+
+//http://james.padolsey.com/javascript/get-document-height-cross-browser/
+function getDocHeight() {
+    var D = document;
+    return Math.max(
+        Math.max(D.body.scrollHeight, D.documentElement.scrollHeight),
+        Math.max(D.body.offsetHeight, D.documentElement.offsetHeight),
+        Math.max(D.body.clientHeight, D.documentElement.clientHeight)
+    );
+}
+
+function getScrollTop(){
+    if(typeof pageYOffset!= 'undefined'){
+        //most browsers
+        return pageYOffset;
+    }
+    else{
+        var B= document.body; //IE 'quirks'
+        var D= document.documentElement; //IE with doctype
+        D= (D.clientHeight)? D: B;
+        return D.scrollTop;
+    }
+}
+
+function deepCopy(obj) {
+    if (Object.prototype.toString.call(obj) === '[object Array]') {
+        var out = [], i = 0, len = obj.length;
+        for ( ; i < len; i++ ) {
+            out[i] = arguments.callee(obj[i]);
+        }
+        return out;
+    }
+    if (typeof obj === 'object') {
+        var out = {}, i;
+        for ( i in obj ) {
+            out[i] = arguments.callee(obj[i]);
+        }
+        return out;
+    }
+    return obj;
+}
+
+// Get an HTTPObject for an AJAX request
+function getHTTPObject(){
+	if (window.ActiveXObject) return new ActiveXObject("Microsoft.XMLHTTP");
+	else if (window.XMLHttpRequest) return new XMLHttpRequest();
+	else {
+		alert("Your browser does not support AJAX, functionality to retrieve UNSW courses will not be available.");
+		return null;
+	}
+}   
+
+//Update textarea after AJAX request
+function setOutput(){
+	if(httpObject.readyState == 4){
+		//we got an AJAX response
+		clearTimeout(ajaxTimeout);
+		//document.getElementById("courseCode").value="course code";
+		//document.getElementById("courseCode").style.color="#999";
+		document.getElementById("courseData").disabled=false;
+		document.getElementById("courseCode").value="";
+		document.getElementById("addButton").value="Add UNSW course";
+		document.getElementById("addButton").disabled=false;
+		var raw=httpObject.responseText
+		//we now have to report any possible errors from the response
+		var boundary=raw.indexOf("@");
+		var errors=raw;
+		var data="";
+		if(boundary!=-1){
+			errors=raw.substr(0,boundary);
+			data=raw.substr(boundary);
+		}
+		if(errors.indexOf("1")!=-1){
+			alert("SavvyShapes could not find your course in that semester. If you\'re sure it exists, you\'ll have to enter it manually.");
+		}else{
+			if(errors.indexOf("0")!=-1){
+				alert("SavvyShapes could not determine how many units of credit your course is worth. 6 UoC has been assumed.");
+			}
+			if(errors.indexOf("2")!=-1){
+				alert("At least one component of that course is full or unavailable. SavvyShapes will fail to find a valid timetable unless you add something manually.");
+			}else if(errors.indexOf("3")!=-1){
+				alert("Every lecture is full. SavvyShapes will still find a timetable using the unavailable lectures but you may be unable to enroll.");
+			}
+			if(errors.indexOf("4")!=-1){
+				alert("Timetable data could not be retrieved for every component of that course. SavvyShapes will fail to find a valid timetable unless you add something manually.");
+			}
+			document.getElementById("courseData").value = document.getElementById("courseData").value.replace(/[\s\r\n]+$/, ''); 
+			if(document.getElementById("courseData").value!=""){
+				document.getElementById("courseData").value+="\n\n"
+			}
+			document.getElementById("courseData").value+=data;
+			//we now have to parse the data so it can be added to the course list etc.
+			updateCourseData();
+		}
+	}
+}
+
+//Send off an AJAX request to add a course
+function addCourse(courseCode,semester,includeFull){
+	if(courseCode.length!=8||courseCode.match(/[A-Z][A-Z][A-Z][A-Z][0-9][0-9][0-9][0-9]/i)==null){
+		alert("That is not a valid UNSW course code");
+		return false;
+	}
+	document.getElementById("courseCode").value=document.getElementById("courseCode").value.toUpperCase();
+	courseCode=document.getElementById("courseCode").value;
+	httpObject = getHTTPObject();
+	if (httpObject != null) {
+		httpObject.open("GET", "fetch?courseCode="+courseCode+"&semester="+semester+(!includeFull?"":"&ignoreFull=true"), true);
+		httpObject.send(null);
+		httpObject.onreadystatechange = setOutput;
+		document.getElementById("courseData").disabled=true;
+		document.getElementById("addButton").disabled=true;
+		document.getElementById("addButton").value="Retrieving...";
+		ajaxTimeout=setTimeout("ajaxAbort();",20000);
+	}
+	return false;
+}
+
+//this is called when there is no AJAX response
+function ajaxAbort(){
+	httpObject.abort();
+	document.getElementById("courseData").disabled=false;
+	document.getElementById("addButton").value="Add UNSW course";
+	document.getElementById("addButton").disabled=false;
+	alert("Error: request timed out. It could be a problem with your connection or a temporary problem with the server I use.");
+	
+}
+
+//this parses the text box to update course list etc
+function updateCourseData(){
+	courseDataValid=false;
+	var courseList=document.getElementById("courseList")
+	courseList.innerHTML="";
+	courses=[];
+	var rawCourses=document.getElementById("courseData").value.replace(/[\r\n]/g,'').split("@");
+	if(rawCourses.shift()!="")return reportInvalid();
+	for(var i in rawCourses){
+		var cData=new Object();
+		var rawClassTypes=rawCourses[i].split("-");
+		var rawMeta=rawClassTypes.shift();
+		while(rawMeta.split("[").length!=rawMeta.split("]").length){
+			rawMeta+="-"+rawClassTypes.shift()
+			if(rawClassTypes.length==0){
+				break;
+			}
+		}
+		if(rawClassTypes.length%2!=0)return reportInvalid();
+		var meta=rawMeta.split("[");
+		cData.enabled=meta[meta.length-1].indexOf("(X)")==-1&&meta[meta.length-1].indexOf("(x)")==-1;
+		if(meta.length<2||meta.length>3)return reportInvalid();
+		cData.courseCode=meta.shift().replace(/[\s]+$/,'');
+		cData.units=parseInt(meta.pop().replace(/\]\s*(\([xX]\))?/,""),10);
+		//if(isNaN(cData.units)||cData.units<1)return reportInvalid();
+		cData.courseName="";
+		if(meta.length!=0){
+			cData.courseName=meta[0].replace(/\][\s]+$/,'');
+		}
+		var courseText="<input type=\"checkbox\" onclick=\"toggleCourse(this,"+i+");\" "+(cData.enabled?"checked=\"true\" ":"");
+		courseText+="/ ><span"+(cData.enabled?"":" class=\"disabledOpt\"")+"><span>"+cData.courseCode+"</span><span class=\"small\">"+cData.courseName+"</span></span><br / >";
+		courseList.innerHTML+=courseText;
+		if(cData.enabled){
+			cData.classTypes=[];
+			for(var j=0;j<rawClassTypes.length;j+=2){
+				var ctData=new Object();
+				ctData.courseId=courses.length;
+				ctData.lecture=rawClassTypes[j].match(/^(\s*le)/i)?true:false;
+				ctData.name=cData.courseCode+" "+rawClassTypes[j].replace(/^\s*(.*)\s*$/,"$1");
+				var rawClass=[]
+				//check if there are no options
+				if(rawClassTypes[j+1].replace(/\s/g,"")!=""){
+					rawClass=rawClassTypes[j+1].replace(/\s/g,"").split("/");
+				}
+				ctData.options=[];
+				for (var k in rawClass){
+					if(rawClass[k]==""){
+						break;
+					}
+					var rawOption=rawClass[k].split(",");
+					var oData=[];
+					for (var m in rawOption){
+						var day=rawOption[m].match(/Mon|Tue|Wed|Thu|Fri/);
+						var time=rawOption[m].match(/\d+/);
+						day=day[0]=="Mon"?0:day=="Tue"?1:day=="Wed"?2:day=="Thu"?3:4;
+						time=parseInt(time[0], 10);
+						oData.push([day,time]);
+					}
+					ctData.options.push(oData);
+				}
+				cData.classTypes.push(ctData);
+			}
+			courses.push(cData);
+		}
+	}
+	courseDataValid=true;
+	if(goalDataValid){
+		document.getElementById("findButton").disabled=false;
+	}
+}
+
+//when a box is checked, this updates the textarea
+function toggleCourse(cbox,i){
+	var rawCourses=document.getElementById("courseData").value.split("@");
+	rawCourses[i+1]=rawCourses[i+1].split("-");
+	if(cbox.checked){
+		rawCourses[i+1][0]=rawCourses[i+1][0].replace(/[\s\r\n]*\(\s*[Xx]\s*\)([\s\r\n]*)$/,"$1");
+	}else{
+		rawCourses[i+1][0]=rawCourses[i+1][0].replace(/([\s\r\n]*)$/," (X)$1");
+		
+	}
+	rawCourses[i+1]=rawCourses[i+1].join("-");
+	document.getElementById("courseData").value=rawCourses.join("@");
+	updateCourseData();
+}
+
+//when updateCourseData or updateGoalData finds invalid data, this is called
+function reportInvalid(){
+	if(!suppressErrors){
+		alert("That data is invalid.");
+	}
+	document.getElementById("findButton").disabled=true;
+	return false;
+}
+
+function updateGoalData(){
+	goalDataValid=false;
+	var goalList=document.getElementById("deepGoalList");
+	goalList.innerHTML="";
+	goals=[];
+	var rawGoals=document.getElementById("goalData").value.replace(/[\r\n]/g,'').replace(/([\^_])/g,"\n$1").split("\n");
+	var credits=rawGoals.shift();
+	reqUnits=parseInt(credits,10);
+	//do i parseInt here?
+	for(var i in rawGoals){
+		var gData=new Object();
+		var boundary=rawGoals[i].lastIndexOf("(");
+		if(!rawGoals[i].match(/\)\s*$/)){
+			gData.weight=1;
+		}else{
+			gData.weight=rawGoals[i].substr(boundary).replace(/[\(\)]/g,'');
+			rawGoals[i]=rawGoals[i].substr(0,boundary);
+		}
+		var rule;
+		boundary=rawGoals[i].lastIndexOf("[");
+		if(boundary==-1){
+			gData.name="Goal "+(i*1+2);
+			rule=rawGoals[i];
+		}else{
+			gData.name=rawGoals[i].substr(boundary).replace(/[\[\]]/g,'');
+			rule=rawGoals[i].substr(0,boundary);
+		}
+		//parse rule
+		var minMax=rule.substr(0,1)=="^"?1:-1;
+		var rawSubGoals=rule.match(/([chbaev]|[otd]\{.+?\})(\(\s*[+-]?([0-9]*\.)?[0-9]+\s*\))?/g);
+		gData.subGoals=[];
+		for(var j=0;j<rawSubGoals.length;j++){
+			var sgData=new Object();
+			sgData.type=rawSubGoals[j].match(/[chbdaevot]/)[0];
+			if(sgData.type=="o"){
+				var rawCond=rawSubGoals[j].match(/\{(.+)\}/)[1].replace(" ","")+" ";
+				rawCond=rawCond.replace(/m/ig,"0_");
+				rawCond=rawCond.replace(/t/ig,"1_");
+				rawCond=rawCond.replace(/w/ig,"2_");
+				rawCond=rawCond.replace(/h/ig,"3_");
+				rawCond=rawCond.replace(/f/ig,"4_");
+				/*rawCond=rawCond.replace(/m([0-9]+)/ig,"0_$1");
+				rawCond=rawCond.replace(/t([0-9]+)/ig,"1_$1");
+				rawCond=rawCond.replace(/w([0-9]+)/ig,"2_$1");
+				rawCond=rawCond.replace(/h([0-9]+)/ig,"3_$1");
+				rawCond=rawCond.replace(/f([0-9]+)/ig,"4_$1");*/
+				rawCond=rawCond.replace(/([0-4])_[^0-9]/ig,"($1_0&$1_1&$1_2&$1_3&$1_4&$1_5&$1_6&$1_7&$1_8&$1_9&$1_10&$1_11&$1_12&$1_13&$1_14&$1_15&$1_16&$1_17&$1_18&$1_19&$1_20&$1_21&$1_22&$1_23)");
+				rawCond=rawCond.replace(/&/g,"&&");
+				rawCond=rawCond.replace(/\|/g,"||");
+				sgData.condition=rawCond.replace(/([0-4])_([0-9]+)/g,"(grid[$1][$2].length==0||!fitMods(grid[$1][$2],mods))");
+			}
+			if(sgData.type=="d"){
+				sgData.target=parseInt(rawSubGoals[j].match(/\{(.+)\}/)[1],10);
+			}
+			if(sgData.type=="t"){
+				sgData.courseCode=rawSubGoals[j].match(/\{(.+)\}/)[1]
+			}
+			sgData.multiplier=1;
+			var match=rawSubGoals[j].match(/\(\s*(.+)\s*\)/);
+			if(match){
+				sgData.multiplier=parseFloat(match[1],10);
+			}
+			sgData.multiplier*=minMax;
+			//if(sgData.multiplier!=0){
+				gData.subGoals.push(sgData);
+			//}
+		}
+		mods={};
+		mods.lec=true;
+		mods.tut=true;
+		mods.courses=[];
+		match=rule.replace(/ /g,"").match(/\/(.+)$/);
+		if(match){
+			var rawCourseMods=match[1].match(/\{.+\}/g);
+			if(rawCourseMods!=null){
+				for(var j=0;j<rawCourseMods.length;j++){
+					mods.courses.push(rawCourseMods[j].substr(1,rawCourseMods[j].length-2));
+				}
+			}
+			var rawMods=match[1].replace(/\{.+\}/g,"");
+			if(rawMods.match(/T/i)||rawMods.match(/L/i)){
+				mods.lec=false;
+				mods.tut=false;
+			}
+			if(rawMods.match(/T/i)){
+				mods.tut=true;
+			}
+			if(rawMods.match(/L/i)){
+				mods.lec=true;
+			}
+		}
+		gData.modifiers=mods;
+		var goalText="<input type=\"text\" onBlur=\"changeWeight("+i+",this.value);\" value=\""+gData.weight+"\" / >&nbsp;<span id=\"goal"+i;
+		goalText+="\""+(gData.weight==0?" class=\"disabledOpt\"":"")+">"+gData.name+"</span><br / >";
+		goalList.innerHTML+=goalText;
+		goals.push(gData);
+	}
+	document.getElementById("credits").value=credits;
+	goalDataValid=true;
+	if(courseDataValid){
+		document.getElementById("findButton").disabled=false;
+	}
+}
+
+function updateCredits(credits){
+	var temp=document.getElementById("goalData").value.split("_");
+	var innerTemp=temp[0].split("^");
+	innerTemp[0]=credits+innerTemp[0].match(/[\s\r\n]*$/)[0];
+	temp[0]=innerTemp.join("^");
+	document.getElementById("goalData").value=temp.join("_");
+	reqUnits=parseInt(credits,10);
+}
+
+function changeWeight(i, value){
+	if(value==0){
+		document.getElementById("goal"+i).className="disabledOpt";
+	}else{
+		document.getElementById("goal"+i).className="";
+	}
+	var rawGoals=document.getElementById("goalData").value.replace(/([\^_])/g,"][$1").split("][");
+	var weightString=value=="1"?"":" ("+value+")";
+	rawGoals[i+1]=rawGoals[i+1].replace(/(\s?\([^\(]*?\))?([\s\r\n]*)$/,weightString+"$2");
+	document.getElementById("goalData").value=rawGoals.join("");
+	goals[i].weight=parseInt(value,10);
+}
+
+function findTimetable(){
+	courseSets=[];
+	makeCourseSets([]);
+	if (courseSets.length==0){
+		alert("It was not possible to find a combination of courses for that many units.");
+		return false
+	}
+	document.getElementById("progressBar").style.width="0";
+	bestSolns=[];
+	for(var i=0;i<numSolns;i++){
+		bestSolns[i]=new Object();
+		bestSolns[i].fitness=-Infinity;
+		//bestSolns[i].subFitnesses;
+		//bestSolns[i].grid;
+	}
+	document.getElementById("calculate").style.display="none";
+	document.getElementById("results").style.display="none";
+	document.getElementById("progress").style.display="block";
+	numCalcs=0;
+	for(var i in courseSets){
+		currCourseSet=i;
+		makeChoicesArray()
+		tempNumCalcs=1;
+		for(var i in choicesArray){
+			tempNumCalcs*=choicesArray[i].options.length;
+		}
+		numCalcs+=tempNumCalcs;
+	}
+	startNewCourseSet(0);
+	doneCalcs=0;
+	if(document.getElementById("progress").style.display!="none"){
+		processor=setInterval("doChunk();",100);
+	}
+}
+
+//this function loops over all possible combinations of enabled courses and tests if they make up the required amount of units
+//it is very stupid and slow
+function makeCourseSets(switches){
+	if(switches.length==courses.length){
+		var totalUnits=0;
+		//we're done with the recursion
+		for(var i in switches){
+			if(switches[i]){
+				totalUnits+=courses[i].units;
+			}
+		}
+		if(totalUnits==reqUnits){
+			courseSets.push(switches);
+		}
+	}else{
+		makeCourseSets(switches.concat(true));
+		makeCourseSets(switches.concat(false));
+	}
+}
+
+function makeChoicesArray(){
+	choicesArray=[];
+	for(var i in courses){
+		if(courseSets[currCourseSet][i]){
+			choicesArray=choicesArray.concat(courses[i].classTypes);
+		}
+	}
+	//sort choicesArray to put more variable choices at the end?
+}
+
+function makeEmptyGrid(){
+	grid=[];
+	for(var i=0;i<5;i++){
+		grid[i]=[];
+		for(var j=0;j<24;j++){
+			grid[i][j]=[];
+		}
+	}
+}
+
+function makeNewProgress(){
+	DFS_nodeProgress=[];
+	for(var i in choicesArray){	
+		DFS_nodeProgress.push(0);
+	}
+}
+
+function startNewCourseSet(id){
+	if(id>=courseSets.length){
+		clearInterval(processor);
+		reportResults();
+		return;
+	}
+	currCourseSet=id;
+	makeEmptyGrid();
+	makeChoicesArray();
+	makeNewProgress();
+	doneCalcs++;
+	for(var i in choicesArray){
+		if (choicesArray[i].options.length==0){
+			//abort, change courseset
+			startNewCourseSet(id+1);
+			return;
+		}
+		//add to grid
+		var clashFlag=false;
+		for(var j in choicesArray[i].options[0]){
+			if(clashFlag){
+				grid[choicesArray[i].options[0][j][0]][choicesArray[i].options[0][j][1]].push(null);
+				continue;
+			}
+			if(!prohibitClashes||grid[choicesArray[i].options[0][j][0]][choicesArray[i].options[0][j][1]].length==0){
+				grid[choicesArray[i].options[0][j][0]][choicesArray[i].options[0][j][1]].push([choicesArray[i].courseId, choicesArray[i].lecture,choicesArray[i].name]);
+			}else{
+				grid[choicesArray[i].options[0][j][0]][choicesArray[i].options[0][j][1]].push([0,0,0]);
+				currDepth=i;
+				clashFlag=true;
+			}
+		}
+		if(clashFlag){
+			return;
+		 }
+		currDepth=choicesArray.length-1;
+	}
+	testFitness();
+}
+
+//this will test a chunk of valid timetables with a depth first search
+function doChunk(){
+	//alert("doing chunk");
+	var t0=new Date().getTime();
+	var testsDone=0;
+	while(testsDone<chunkSize){
+		while(1){
+			//remove option for last choice
+			var cID=DFS_nodeProgress[currDepth];
+			for(var i in choicesArray[currDepth].options[cID]){
+				grid[choicesArray[currDepth].options[cID][i][0]][choicesArray[currDepth].options[cID][i][1]].pop();
+			}
+			if(choicesArray[currDepth].options.length>cID+1){
+				DFS_nodeProgress[currDepth]++;
+				//next option is valid
+				break;
+			}
+			if (currDepth==0){
+				//we're done
+				startNewCourseSet(currCourseSet+1);
+				return;
+			}
+			DFS_nodeProgress[currDepth]=0;
+			currDepth--;
+		}
+		var clashFlag=false;
+		for(var i=currDepth;i<choicesArray.length;i++){
+			var cID=DFS_nodeProgress[i];
+			//add to grid
+			for(var j in choicesArray[i].options[cID]){
+				if(clashFlag){
+					grid[choicesArray[i].options[cID][j][0]][choicesArray[i].options[cID][j][1]].push([0,0,0]);
+					continue;
+				}
+				if(!prohibitClashes||grid[choicesArray[i].options[cID][j][0]][choicesArray[i].options[cID][j][1]].length==0){
+					grid[choicesArray[i].options[cID][j][0]][choicesArray[i].options[cID][j][1]].push([choicesArray[i].courseId, choicesArray[i].lecture,choicesArray[i].name]);
+				}else{
+					grid[choicesArray[i].options[cID][j][0]][choicesArray[i].options[cID][j][1]].push([0,0,0]);
+					currDepth=i;
+					clashFlag=true;
+				}
+			}
+			if(clashFlag)
+				break;
+		}
+		testsDone++;
+		if(!clashFlag){
+			currDepth=choicesArray.length-1;
+			testFitness();
+		}
+	}
+	doneCalcs+=chunkSize
+	var t1=new Date().getTime();
+	//chunkSize=1000;
+	chunkSize+=Math.floor((chunkSize*50/(t1-t0)-chunkSize)*Math.max(0.05,1000/doneCalcs));
+	var timeRemaining=(numCalcs-doneCalcs)/(chunkSize*20);
+	var timeUnit="seconds";
+	if(timeRemaining>100){
+		timeRemaining/=60;
+		timeUnit="minutes";
+	}
+	if(timeRemaining>100){
+		timeRemaining/=60;
+		timeUnit="hours";
+	}
+	document.getElementById("progressBar").style.width=Math.round(doneCalcs*1000*880/numCalcs)/1000+"px";
+	document.getElementById("stats").innerHTML="There are "+numCalcs+" timetables to test.<br / >"+doneCalcs+" timetables have been processed so far.<br / >("+Math.round(doneCalcs*100000/numCalcs)/1000+"%)<br / >Current timetables per second is approximately "+chunkSize*20+".<br / >SavvyShapes estimates that the number of "+timeUnit+" remaining is approximately "+Math.round(timeRemaining*10)/10+".<br / >";
+}
+
+function abortCalc(){
+	if(!confirm("Click OK to confirm abort")){
+		return false;
+	}
+	clearInterval(processor);
+	reportResults();
+	return false;
+}
+
+function testFitness(){
+	var fitness=0;
+	var subFitnesses=[]
+	for(var i in goals){
+		if(goals[i].weight==0){
+			subFitnesses.push(0);
+			continue;
+		}
+		var subFitness=0;
+		for(var j in goals[i].subGoals){
+			var type=goals[i].subGoals[j].type;
+			var mult=goals[i].subGoals[j].multiplier;
+			if(mult==0){
+				continue;
+			}
+			var mods=goals[i].modifiers;
+			if(type=="c"){
+				//clashes
+				for(var k in grid){
+					for(var m=0;m<24;m++){
+						if(grid[k][m].length>1&&fitMods(grid[k][m],mods)){
+							subFitness+=(grid[k][m].length-1)*mult;
+						}
+					}
+				}
+			}
+			if(type=="b"||type=="a"||type=="v"){
+				//arrival time
+				var tempSubFitness=0
+				var startTimes=[];
+				var freeDays=0;
+				for(var k in grid){
+					for(var m=0;m<24;m++){
+						if(grid[k][m].length>0&&fitMods(grid[k][m],mods)){
+							if(type=="a"){
+								tempSubFitness+=m*mult;
+							}else{
+								startTimes[k]=m;
+							}
+							break;
+						}
+						if(m==23){
+							freeDays++;
+						}
+					}
+				}
+				if(type=="a"){
+					subFitness+=tempSubFitness/(5-freeDays);
+				}
+			}
+			if(type=="b"||type=="e"){
+				//ending time
+				var tempSubFitness=0;
+				var endTimes=[];
+				var freeDays=0;
+				for(var k in grid){
+					for(var m=23;m>=0;m--){
+						if(grid[k][m].length>0&&fitMods(grid[k][m],mods)){
+							if(type=="e"){
+								tempSubFitness+=(m+1)*mult;
+							}else{
+								endTimes[k]=m+1;
+							}
+							break;
+						}
+						if(m==0){
+							freeDays++;
+						}
+					}
+				}
+				if(type=="e"){
+					subFitness+=tempSubFitness/(5-freeDays);
+				}
+			}
+			if(type=="b"||type=="h"){
+				//hours of classes
+				var classHours=0;
+				var freeDays=0;
+				for(var k in grid){
+					for(var m=0;m<24;m++){
+						if(grid[k][m].length>0&&fitMods(grid[k][m],mods)){
+							classHours++;
+						}
+					}
+				}
+				if(type=="h"){
+					subFitness+=classHours*mult
+				}
+			}
+			if(type=="b"){
+				//breaks
+				var totalHours=0;
+				for(var k in grid){
+					if(startTimes[k]!=undefined){
+						totalHours+=(endTimes[k]-startTimes[k]);
+					}
+				}
+				subFitness+=(totalHours-classHours)*mult;
+			}
+			if(type=="v"){
+				//get similar starting times
+				moment1=0;
+				moment2=0;
+				for(var k in grid){
+					if(startTimes[k]!=undefined){
+						moment1+=startTimes[k];
+						moment2+=startTimes[k]*startTimes[k];
+					}
+				}
+				moment1/=5-freeDays;
+				moment2/=5-freeDays;
+				subFitness+=(moment2-moment1*moment1)*mult;
+			}
+			if(type=="t"){
+				//take particular course
+				for(var k in courses){
+					if(courseSets[currCourseSet][k]&&courses[k].courseCode==goals[i].subGoals[j].courseCode){
+						subFitness+=mult
+						break;
+					}
+				}
+			}
+			if(type=="d"){
+				//try to get a above a specific density (contiguous block size)
+				var runLength=0;
+				for(var k in grid){
+					for(var m=0;m<24;m++){
+						if(grid[k][m].length>0&&fitMods(grid[k][m],mods)){
+							runLength++;
+							if(runLength>goals[i].subGoals[j].target){
+								subFitness+=mult;
+							}
+						}else{
+							runLength=0;
+						}
+					}
+				}
+			}			
+			if(type=="o"){
+				//leave a time open
+				subFitness+=eval(goals[i].subGoals[j].condition)*mult;
+				
+			}
+		}
+		subFitness=Math.round(subFitness*100)/100;
+		subFitnesses.push(subFitness);
+		fitness+=subFitness*goals[i].weight;
+	}
+	for(var i in bestSolns){
+		if(fitness>bestSolns[i].fitness){
+			bestSolns.splice(i,0,{fitness:fitness,grid:deepCopy(grid),subFitnesses:subFitnesses});
+			bestSolns.pop();
+			break;
+		}
+	}
+	/*if(fitness>bestFitness){
+		bestFitness=fitness;
+		bestGrid=deepCopy(grid);
+		bestSubFitnesses=subFitnesses;
+	}*/
+	//drawGrid(document.getElementById("progress"));
+	//alert("testing");
+}
+
+//check if the timeslot has classes in it that fit the modifiers
+function fitMods(slot, mods){
+	for(var i in slot){
+		var courseOK=true
+		for(var j in mods.courses){
+			courseOK=false;
+			if(courses[slot[i][0]].courseCode==mods.courses[j]){
+				courseOK=true;
+				break;
+			}
+		}
+		if(courseOK){
+			if(mods.lec&&slot[i][1]||mods.tut&&!slot[i][1]){
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+function reportResults(){
+	document.getElementById("progress").style.display="none";
+	document.getElementById("calculate").style.display="block";
+	if(bestSolns[0].grid==undefined){
+		alert("No timetables were found");
+		return false;
+	}
+	document.getElementById("results").style.display="block";
+	drawGrid(0);
+	//document.getElementById("gridList").innerHTML="<h3>Top Timetables</h3>";
+	document.getElementById("gridContainer").innerHTML="";
+	var earliest=23;
+	var latest=0;
+	for(var k in bestSolns){
+		for(var i in bestSolns[k].grid){
+			for(var j=0;j<24;j++){
+				if(bestSolns[k].grid[i][j].length!=0){
+					if(earliest>j){
+						earliest=j;
+					}
+					if(latest<j){
+						latest=j;
+					}
+				}
+			}
+		}
+	}
+	for(var i in bestSolns){
+		drawMiniGrid(document.getElementById("gridContainer"),i, earliest, latest);
+	}
+	document.getElementById("miniGrid0").style.backgroundColor="#CCC";
+}
+
+function drawGrid(solnId){
+	var dataStrings = [];
+	var HTMLstring="<table class=\"timetable\">";
+	var earliest=23;
+	var latest=0;
+	for(var i in bestSolns[solnId].grid){
+		for(var j=0;j<24;j++){
+			if(bestSolns[solnId].grid[i][j].length!=0){
+				if(earliest>j){
+					earliest=j;
+				}
+				if(latest<j){
+					latest=j;
+				}
+			}
+		}
+	}
+	HTMLstring+="<tr class=\"dayLabel\"><td class=\"timeLabel\"><span>"+earliest;
+	HTMLstring+=":00</span></td><td>Mon</td><td>Tue</td><td>Wed</td><td>Thu</td><td>Fri</td></tr>";
+	for(var j=earliest;j<=latest;j++){
+		HTMLstring+="<tr><td class=\"timeLabel\"><span>"+(j*1+1)+":00</span></td>";
+		for(var i=0;i<5;i++){
+			var numClasses=bestSolns[solnId].grid[i][j].length;
+			HTMLstring+="<td"+(numClasses==0?"":numClasses==1?"":" class=\"clash\"")+">";
+			var textArray=[];
+			for(var k in bestSolns[solnId].grid[i][j]){
+				textArray.push(bestSolns[solnId].grid[i][j][k][2]);
+				dataStrings.push(i+String.fromCharCode(65+j)+bestSolns[solnId].grid[i][j][k][2].replace(/ /g,"/"))
+			}
+			HTMLstring+=textArray.join(", ");
+			HTMLstring+="</td>";
+		}
+		HTMLstring+="</tr>";
+	}
+	HTMLstring+="</table>";
+	document.getElementById("resultsGrid").innerHTML=HTMLstring;
+	var tempHeight=20+(latest-earliest+1)*41;
+	document.getElementById("resultsBar").style.height=tempHeight+"px";
+	document.getElementById("resultsList").style.height=(tempHeight-70)+"px";
+	HTMLstring="";
+	for(var i in bestSolns[solnId].subFitnesses){
+		if(goals[i].weight!=0){
+			HTMLstring+="<span class=\"resultsIndent\">"+goals[i].name+":</span><span class=\"resultsIndent2\">"+bestSolns[solnId].subFitnesses[i];
+			HTMLstring+=" &times; "+goals[i].weight+" =</span>"+(bestSolns[solnId].subFitnesses[i]*goals[i].weight)+"</span><br / >";
+		}
+	}
+	document.getElementById("resultsList").innerHTML=HTMLstring;
+	document.getElementById("totalScore").innerHTML="<span class=\"resultsIndent\">Total Score:</span><span class=\"resultsIndent2\"></span>"+Math.round(bestSolns[0].fitness*100)/100;
+	document.getElementById("viewLink").innerHTML='<a href="?v='+escape(dataStrings.join('-'))+'" target="_blank">Save/print/share this timetable</a>';
+}
+
+function drawMiniGrid(div, solnId, earliest, latest){
+	if(bestSolns[solnId].grid==undefined){
+		div.innerHTML+="<div id=\"miniGrid"+solnId+"\" class=\"miniGrid\"></div>"
+		return false;
+	}
+	var HTMLstring="<a onclick=\"return switchGrid("+solnId+");\" href=\"\"><div id=\"miniGrid"+solnId+"\" class=\"miniGrid\"><table class=\"miniTimetable\">";
+	for(var j=earliest;j<=latest;j++){
+		HTMLstring+="<tr>";
+		for(var i in bestSolns[solnId].grid){
+			var numClasses=bestSolns[solnId].grid[i][j].length;
+			HTMLstring+="<td"+(numClasses==0?" class=\"unfilled\"":numClasses==1?" class=\"filled\"":" class=\"clash\"")+"></td>";
+		}
+		HTMLstring+="</tr>";
+	}
+	HTMLstring+="</table>";
+	HTMLstring+="<span>(score: "+Math.round(bestSolns[solnId].fitness*100)/100+")</span>";
+	HTMLstring+="</div></a>";
+	div.innerHTML+=HTMLstring;
+}
+
+function switchGrid(solnId){
+	var scrollBottom=getDocHeight()-getScrollTop();
+	drawGrid(solnId);
+	for(var i in bestSolns){
+		document.getElementById("miniGrid"+i).style.backgroundColor="transparent";
+	}
+	document.getElementById("miniGrid"+solnId).style.backgroundColor="#CCC";
+	window.scrollTo(0,getDocHeight()-scrollBottom);
+	//document.scrollTop=getDocHeight()-scrollBottom;
+	//window.scrollBy(0,getDocHeight()-oldHeight);
+	return false;
+}
+
+function makeConcise(){
+	document.getElementById("courseBlurb").style.display="none";
+	document.getElementById("goalBlurb").style.display="none";
+	document.getElementById("footer").style.display="none";
+	document.getElementById("verboseTag").style.display="block";
+	document.getElementById("conciseTag").style.display="none";
+	return false;
+}
+function makeVerbose(){
+	document.getElementById("courseBlurb").style.display="block";
+	document.getElementById("goalBlurb").style.display="block";
+	document.getElementById("footer").style.display="block";
+	document.getElementById("verboseTag").style.display="none";
+	document.getElementById("conciseTag").style.display="block";
+	return false;
+}
+function hideStats(){
+	var scrollBottom=getDocHeight()-getScrollTop();
+	document.getElementById("stats").style.display="none";
+	document.getElementById("showStatsTag").style.display="inline";
+	document.getElementById("hideStatsTag").style.display="none";
+	window.scrollTo(0,getDocHeight()-scrollBottom);
+	return false;
+}
+function showStats(){
+	var scrollBottom=getDocHeight()-getScrollTop();
+	document.getElementById("stats").style.display="inline";
+	document.getElementById("showStatsTag").style.display="none";
+	document.getElementById("hideStatsTag").style.display="inline";
+	window.scrollTo(0,getDocHeight()-scrollBottom);
+	return false;
+}
+
+function openHelp(anchor){
+	if(helpWindow==null||helpWindow.closed){
+		helpWindow=window.open('help.htm'+anchor,'','menubar=no,toolbar=no,location=no,status=no,scrollbars=yes,resizable=yes,height=600,width=600');
+		helpWindow.location.hash=anchor;
+	}else{
+		helpWindow.location='help.htm'+anchor;
+		helpWindow.location.hash=anchor;
+	}
+	helpWindow.focus();
+	return false;
+}
+
+function onFocusCourseCode(field){
+	if(field.value=="course code"){
+		field.value="";
+		field.style.color="#000";
+	}
+}
+function onBlurCourseCode(field){
+	if(field.value==""){
+		field.value="course code";
+		field.style.color="#999";
+	}
+}
+
+function onLoadBody(){
+	//this is the stuff we want to call after all the page has been loaded (disabling certain elements etc)
+	//first, display all the elements that were hidden in case of noscript
+	document.getElementById("courses").style.display="block";
+	document.getElementById("goals").style.display="block";
+	document.getElementById("calculate").style.display="block";
+	document.getElementById("footer").style.display="block";
+	
+	//set semester select box to an appropriate option based on the date
+	var d=new Date();
+	var m=d.getMonth();
+	//dec-apr sem 1
+	//may-aug sem 2
+	//sep-nov summer
+	var term=m<3||m>9?0:(m<8?1:2);
+	document.getElementById("semester").selectedIndex=term;
+	
+	//sometimes a browser will remember form elements, this needs to be handled
+	if(document.getElementById("courseCode").value!="course code"){
+		document.getElementById("courseCode").style.color="#000";
+	}
+	updateCourseData();
+	updateGoalData();
+	suppressErrors=false;	
+}
+</script>
+</head>
+<body onload="onLoadBody();">
+<div id="container">
+	<div id="content">
+		<div id="header">
+			<h1>SavvyShapes <span class="sup" style="position:absolute;color:#999">beta</span></h1>
+			<div id="subtitle">Auto-Timetable for Universities</div>
+			<div id="helpTag"><a onclick="return openHelp('');" href="help.htm">Help</a></div>
+			<div id="conciseTag"><a onclick="return makeConcise();" href="">Concise View</a></div>
+			<div id="verboseTag"><a onclick="return makeVerbose();" href="">Verbose View</a></div>
+		</div>
+		<noscript>
+			<div style="padding:10px;text-align:center;background-color:#D75;">Your browser does not support Javascript. You cannot use SavvyShapes.</div>
+		</noscript>
+		<div id="courses">
+			<h2>Data for Courses</h2>
+			<div id="courseBlurb" class="blurb">
+			<p>Select and add your courses by course code (e.g. MATH1151) and they will appear in the data box. You can manually edit this data if you want.</p>
+			<p>You can add more courses than you intend to take, the system will automatically choose an appropriate combination. However, adding too many subjects can slow down computation; click the checkboxes to disable them.</p>
+			<p>Full lectures are always included when retrieving class data under the assumption that you can crash a full lecture. You can choose whether to include other full classes.</p>
+			</div>
+			<div class="sidebar">
+			<h3>Courses</h3>
+			<div id="courseList">
+			</div>
+			<form onsubmit="return addCourse(this.courseCode.value,this.semester.value,this.includeFull.checked);">
+			<input style="color:#999;width:75px;" name="courseCode" id="courseCode" type="text" value="course code" size="8" onblur="onBlurCourseCode(this);" onfocus="onFocusCourseCode(this);" />&nbsp;&nbsp;
+			<input type="submit" id="addButton" value="Add UNSW course" /><br />
+			<select name="semester" id="semester" style="margin-top:10px">
+			<option value="S1">Sem 1</option>
+			<option value="S2">Sem 2</option>
+			<option value="X1">Summer</option>
+			</select>&nbsp;&nbsp;
+			<input name="includeFull" type="checkbox" />Include closed classes
+			</form>
+			</div>
+			<textarea id="courseData" onblur="updateCourseData();" wrap="off"></textarea><br />
+			<a class="small"  onclick="return openHelp('#course');" href="help.htm#course">(syntax help)</a>
+		</div>
+		<div id="goals">
+			<h2>Data for Goals</h2>
+			<div id="goalBlurb" class="blurb">
+			<p>You can use the preset goals or create your own. "Weight" is how important it is considered to satisfy a goal. Goals with zero weight are not considered.</p>
+			</div>
+			<div class="sidebar">
+			<h3>Goals</h3>
+			<span class="goalindent">Weight</span><span class="goalindent">Goal</span>
+			<div id="goalList">
+				<input type="text" class="disabled" disabled="disabled" value="N/A" size="4" />&nbsp;Take <input id="credits" type="text" style="width:25px;" value="24" size="2" style="width:20" onblur="updateCredits(this.value);" /> units of credit<br />
+				<div id="deepGoalList">
+				</div>
+			</div>
+			</div>
+			<textarea id="goalData" onblur="updateGoalData();" wrap="off">
+24
+_c [Minimize clashes] (1000)
+^o{m}o{t}o{w}o{h}o{f} [Minimize days at uni] (10)
+_b [Minimize breaks]
+^a [Start uni late] (0)
+_e [End uni early] (0)
+^o{m9}o{t10}o{w9}o{h9}o{f9} [Minimize 9am classes] (0)
+_d{3} [Minimize 4-hour blocks of classes] (0)
+^o{m12|m13}o{t12|t13}o{w12|w13}o{h12|h13}o{f12|f13} [Include lunch breaks](0)
+</textarea>
+			<a class="small"  onclick="return openHelp('#goal');" href="help.htm#goal">(syntax help)</a>
+		</div>
+		<div id="calculate">
+			<input id="findButton" type="button" onclick="findTimetable();" value="Find Timetable" />
+		</div>
+		<div id="progress">
+			<h2>Progress</h2>
+			<div style="background-color:#EEE;width:880px;height:20px;"><div style="background-color:#CCC;height:20px;" id="progressBar"></div></div>
+			<a id="showStatsTag" onclick="return showStats();" href="">show detailed progress statistics</a>
+			<span id="stats" style="display:none;"></span>
+			<a id="hideStatsTag" onclick="return hideStats();" style="display:none;" href="">hide these statistics</a>
+			<br /><br /><a onclick="return abortCalc();" href="">Abort and show me the best so far</a>
+		</div>
+		<div id="results">
+			<h2>Results</h2>
+			<div id="resultsBar"><h3>Score Breakdown</h3><div id="resultsList"></div><span id="totalScore"></span><br /><span id="viewLink"></span></div>
+			<div id="resultsGrid"></div>
+			<div id="gridList"><h3>Top Timetables</h3><div id="gridContainer"></div></div>
+			
+		</div>
+		<div id="footer">
+			<p>SavvyShapes is an automatic timetabling system by <a href="mailto:fearthekwan@gmail.com">Matthew Kwan</a> for UNSW, although it can be used for other universities. It was modelled after <a href="http://mahler.cse.unsw.edu.au/rectangles/">Rectangles</a> and is an attempt to address some problems that made it difficult to find optimal timetables.</p><p>Last updated on 7 January 2011.</p>
+		</div>
+	</div>
+</div>
+</body>
+</html>

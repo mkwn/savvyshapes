@@ -1,0 +1,85 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Cache-Control" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+<title>SavvyShapes Help</title>
+<style type="text/css">
+body{
+font-family: Tahoma, Geneva, sans-serif;
+font-size:10pt;
+}
+.code{
+font-family: Courier New, monospace;
+background-color: #EEE;
+}
+</style>
+</head>
+<body>
+<h1>Help</h1>
+<p>SavvyShapes is an auto-timetabler. It is designed to be used when you are enrolling for uni courses, and choosing between a number of courses and class times. SavvyShapes attempts to find a combination of classes that is most convenient for you based on your own preferences.</p>
+<p>You can download the main page and it will work offline, but if you do this you will not be able to retrieve UNSW course data automatically.</p>
+<p>SavvyShapes is not designed to work with non-standard courses such as those that take place only every second week or don't begin and end on the hour. The course data retrieval service may fail or produce unexpected results for these courses. If you want to use SavvyShapes for a non-standard course you may have to create dummy data that approximates the structure of the course, or functionality may be added in later versions.</p>
+<p>SavvyShapes functions by exhaustively testing each possible timetable and sorting them according to your preferences. As a result, if you ask SavvyShapes to process a large number of options or courses (such as the first year courses offered by the UNSW school of business), it is likely to take a very long time and could possibly fail entirely. The best way to speed up calculation would be to use a browser like <a href="http://www.google.com/chrome/intl/en/landing_chrome.html?hl=en">Google Chrome</a> that has a fast javascript engine, but in extreme circumstances the only option might be to disable goals, candidate courses or class times. If you're planning on skipping lectures, removing lectures from the choices pool will make a huge difference.</p>
+<p>Finally, I can't guarantee the reliability of any component of this system. You should verify that the output is reasonable.</p>
+
+<h2 id="course">Course Data Syntax</h2>
+<p>You don't need to read this if you want to do a UNSW course and are happy with the automatically generated data. You will need to read this if:</p>
+<ol>
+<li>You don't go to UNSW</li>
+<li>You want to modify the automatically generated data (perhaps you want to avoid a specific lecturer's class)</li>
+<li>The automatically generated data is invalid or your course can't be found (this is unlikely)</li>
+</ol>
+<p>Each course has a header, then timing data. The header is formatted as:</p>
+<p><span class="code">@coursecode [course name] [units] (X)</span></p>
+<p><span class="code">(X)</span> is optional and indicates whether the course is to be disabled by default. The course name is also optional. You may not use <span class="code">[</span> or <span class="code">]</span> or <span class="code">@</span> in the course code or name, and you can't use <span class="code">-</span> or <span class="code">/</span>in the course code, but you may use anything else, including spaces. Other than that, spaces and newlines are mostly irrelevant: if you wanted you could put all the course data on one line. The number of units must be a positive integer value.</p>
+<p>The timing data is split into components. Usually these are tutorials and lectures, although they can be named everything you want. The heading to a component is formatted as:</p>
+<p><span class="code">-component name-</span></p>
+<p>If the component name begins with the string <span class="code">LE</span> (case insensitive), it is treated as a lecture. Otherwise it is treated as a tutorial. This is relevant because goals can distinguish between the two.</p>
+<p>The body of the timing data is formatted like:</p>
+<p><span class="code">option 1/option 2/option 3...</span></p>
+<p>Where each option is a choice of when to have the class for that particular component. Each option is separated into hour long timeslots separated by <span class="code">,</span>, so the data for a component might look like:</p>
+<p><span class="code">-Lecture-<br />Mon 10,Mon 11/Thu 10,Fri 10</span></p>
+<p>This indicates that the lecture can be taken at Monday from 10:00am to 12:00pm or in two hour-long parts at 10am on Thursday and Friday.</p>
+<p>24-hour time is used and the time for a timeslot must be formatted as an integer from 0 to 23. Both <span class="code">9</span> and <span class="code">09</span> are valid formats for 9:00am. The keyword for each weekday is the first three letters of its name, case insensitive.</p>
+<p>Here's some example data for a UNSW course. There are 6 lectures but they are all compulsory so they are grouped as one lecture. There are 3 tutorials but they make up a single enrollment option so they are grouped into triplets.</p>
+<p><span class="code">
+@MATH1231 [Mathematics 1B (U1)] [6]<br />
+-Lecture-<br />
+Mon 13,Mon 16,Tue 9,Tue 12,Thu 13,Thu 16<br />
+-Tutorial-<br />
+Mon 14,Thu 14,Tue 10/<br />
+Mon 15,Thu 15,Tue 11<br />
+</span></p>
+<p>SavvyShapes attempts to detect and warn about invalid data, but it is possible that it will miss something and the data will cause unexpected results.</p>
+<h2 id="goal">Goal Data Syntax</h2>
+<p>You don't need to read this if your requirements can be expressed by the preset goals.</p>
+<p>The first part of the goal data is always a number that represents the number of units you would like to take. This is different to other goals in that it has no weighting and must always be satisfied.</p>
+<p>Each other goal is in the following format:</p>
+<p><span class="code">rule [name] (weight)</span></p>
+<p>If you omit the name or weight, default values are chosen for you. The rule data is formatted like:</p>
+<p><span class="code">[^ or _][quantities]/[options]</span></p>
+<p>(Square brackets are for clarity, do not use them in the rule data).</p>
+<p>The <span class="code">^</span> or <span class="code">_</span> represents whether the quantities should be minimized or maximized.</p>
+<h3>Quantities</h3>
+<p>The simplest quantities include:</p>
+<ul>
+<li>number of hours of clashes (<span class="code">c</span>)</li>
+<li>number of hours of classes (<span class="code">h</span>)</li>
+<li>number of hours of between-class breaks (<span class="code">b</span>)</li>
+<li>Average arrival time (<span class="code">a</span>)</li>
+<li>Average ending time (<span class="code">e</span>)</li>
+</ul>
+<p><span class="code">v</span> denotes the <a href="http://en.wikipedia.org/wiki/Variance">variance</a> of your starting times. If you want to start uni at a consistent time, minimize this.</p>
+<p><span class="code">d{hours}</span> denotes excess class density. The number of hours you specify is considered to be the maximum amount of successive hours of classes you are indifferent to. So for example, if you specify 3 hours, then a timetable with 2 solid blocks of 5 hours would score (5 - 3) &times 2 = 4.</p>
+<p><span class="code">t{course code}</span> is used to show preference (or disfavour) for a particular course. If the course you specify is in a timetable, that timetable will score one point.</p>
+<p><span class="code">o{time data}</span> scores as one point if the times you specify are free from classes. a timeslot of one hour is formatted like <span class="code">M9</span> (Monday, 9:00), using the first letter of the day and <span class="code">H</span> for Thursday. (You can also specify a whole day to be free, with just the letter for the day such as <span class="code">M</span>) You can specify multiple times, separated with <span class="code">&</span> (AND) or <span class="code">|</span> (OR), nested within brackets if desired. So if you would like to be free from 9:00-11:00 on Monday or from 10:00-12:00 on Thursday, your time data could be formatted like <span class="code">(M9&amp;M10)|(H10&amp;H11)</span>.</p>
+<p>You can group several quantities into one rule, to make it more convenient to use. Within one rule you can assign sub-weights with parentheses. All quantities are multiplied by their sub-weights then added together to form the overall score for that rule. For example, a &quot;delay classes&quot; rule might look like <span class="code">^o{m}(4)o{t}(3)o{w}(2)o{h}</span>. What this means is that we desire each day to be open, but we assign more importance to the earlier days.</p>
+<h3>Modifiers</h3>
+<p>Modifiers are optional, and make the rule only apply to a certain kind of class. They appear after a slash separating them from the main rule data. <span class="code">T</span> specifies tutorials and <span class="code">L</span> specifies lectures. So, if you were planning on skipping lectures some of the time then you might put <span class="code">/T</span> after your rules to make them only apply to tutorials.</p>
+<p>you can also specify particular courses to take into account with a rule with <span class="code">{course code}</span>. If you would prefer to take a specific finance tutorial you might use the rule <span class="code">_o{M9}/{FINS1613}T</span> which will try and <em>not</em> have 9:00 on mondays free, but only for finance tutorials.</p>
+</body>
+</html>

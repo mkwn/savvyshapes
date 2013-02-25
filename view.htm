@@ -1,0 +1,319 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>SavvyShapes</title>
+<style type="text/css">
+select,input,body{
+font-family: Tahoma, Geneva, sans-serif;
+font-size:10pt;
+}
+body{
+margin:0;
+margin-bottom:30px
+}
+h1,h2,h3,h4{
+margin-top: 0;
+}
+h3,h4{
+margin-bottom: 5px;
+}
+a{
+text-decoration: none;
+}
+
+.sup{
+font-size: 50%;
+vertical-align: super;
+}
+.small{
+font-size: 70%;
+}
+.disabled{
+background-color: #EEE;
+}
+
+#container{
+text-align: center;
+}
+#content{
+text-align: left;
+margin-left: auto ;
+margin-right: auto ;
+width: 900px;
+position: relative;
+background-color:#FFF;
+border:solid;
+border-top:none;
+border-color:#DDD;
+}
+#header, #courses, #goals, #calculate, #results, #progress, #footer{
+padding: 10px;
+}
+
+#header{
+text-align: center;
+padding-bottom:30px;
+}
+.headerLeft{
+position:absolute;
+width:200px;
+text-align:right;
+right:10px;
+}
+#subtitle{
+position:absolute;
+width:900px;
+left:0;
+}
+#helpTag{
+position:absolute;
+width:200px;
+text-align:left;
+left:10px;
+}
+#conciseTag, #verboseTag{
+position:absolute;
+width:200px;
+text-align:right;
+right:10px;
+}
+#verboseTag{
+display:none;
+}
+
+#courses{
+background-color:#EEE;
+}
+#goals{
+background-color:#DDD;
+}
+.blurb{
+}
+#goalData, #courseData{
+height: 200px;
+width: 510px;
+}
+.sidebar{
+float: right;
+width: 350px;
+height: 200px;
+}
+#courseList, #goalList{
+line-height:1.2;
+white-space:nowrap;
+overflow: auto;
+margin-bottom: 10px;
+margin-top: 5px;
+}
+#courseList{
+height: 100px;
+}
+#goalList{
+height: 140px;
+}
+#courseList span {
+width: 70px;
+display: inline-block;
+}
+#goalList input {
+width:50px;
+padding:0;
+margin:0;
+}
+.disabledOpt {
+color:#666;
+}
+.goalindent{
+width: 60px;
+display: inline-block;
+font-size: 70%;
+}
+
+#calculate{
+text-align: center;
+}
+
+#results{
+}
+#resultsGrid{
+}
+.timetable, .miniTimetable{
+border-collapse:collapse;
+}
+.timetable{
+margin-bottom:20px;
+}
+.timetable tr{
+height:50px;
+}
+.timetable td{
+border:solid;
+border-width:2px;
+font-size:90%;
+padding:5px;
+width:100px;
+text-align:center;
+}
+.dayLabel{
+height:10px!important;
+}
+.dayLabel td{
+padding:5px!important;
+vertical-align:bottom;
+border:none!important;
+}
+.timeLabel{
+padding:5px!important;
+border:none!important;
+vertical-align:bottom;
+text-align:right!important;
+width:15px!important;
+}
+.timeLabel span{
+position:relative;
+bottom:-10px;
+}
+.clash{
+background-color:#D75;
+}
+#resultsBar{
+float:right;
+width:350px;
+}
+#resultsList{
+white-space:nowrap;
+overflow: auto;
+margin-bottom:5px;
+}
+.resultsIndent{
+width: 200px;
+display: inline-block;
+}
+.resultsIndent2{
+width: 80px;
+display: inline-block;
+}
+#totalScore{
+font-weight:bold;
+}
+#gridList{
+padding:10px;
+background-color:#EEE;
+margin:-10px;
+}
+.miniGrid{
+display:inline-block;
+*display: inline;
+width:130px;
+margin-left:5px;
+margin-right:5px;
+text-align:center;
+padding-bottom:10px;
+}
+#gridList a{
+color:black;
+cursor:pointer;
+}
+a:visited {
+outline: none;
+}
+#gridContainer{
+margin-top:20px;
+margin-left:auto;
+margin-right:auto;
+text-align:center;
+}
+.miniTimetable{
+margin-left:auto;
+margin-right:auto;
+margin-top:10px;
+}
+.miniTimetable td{
+border:solid;
+border-width:1px;
+border-color:#CCC;
+width:20px;
+height:10px;
+padding:0;
+}
+.filled{
+background-color:#CCC;
+}
+.unfilled{
+background-color:white;
+}
+
+#progress{
+}
+
+#footer{
+text-align: center;
+}
+
+#courses, #goals, #calculate, #results, #progress, #footer{
+display: none;
+}
+</style>
+<!--[if lte IE8]> 
+<style type="text/css">
+#goalList input {
+margin-top:-1;
+margin-bottom:-1;
+height:20px;
+}
+</style>
+<![endif]-->
+
+<script type="text/javascript">
+
+function drawGrid(){
+	data = "{{ dataString }}".split('-');
+	grid = [];
+	for(var i = 0;i<5;i++){
+		day = [];
+		for(var j = 0;j<24;j++)
+			day.push([]);
+		grid.push(day);
+	}
+	var earliest=23;
+	var latest=0;
+	for(var i in data){
+		chars = data[i].split("");
+		day = Number(chars.shift());
+		time = chars.shift().charCodeAt(0)-65;
+		text = chars.join("").replace(/(\/)/g, " ");
+		grid[day][time].push(text);
+		if(earliest>time)
+			earliest=time;
+		if(latest<time)
+			latest=time;
+	}
+	var HTMLstring="<table class=\"timetable\">";
+	HTMLstring+="<tr class=\"dayLabel\"><td class=\"timeLabel\"><span>"+earliest;
+	HTMLstring+=":00</span></td><td>Mon</td><td>Tue</td><td>Wed</td><td>Thu</td><td>Fri</td></tr>";
+	for(var j=earliest;j<=latest;j++){
+		HTMLstring+="<tr><td class=\"timeLabel\"><span>"+(j*1+1)+":00</span></td>";
+		for(var i=0;i<5;i++){
+			var numClasses=grid[i][j].length;
+			HTMLstring+="<td"+(numClasses==0?"":numClasses==1?"":" class=\"clash\"")+">";
+			var textArray=[];
+			for(var k in grid[i][j]){
+				textArray.push(grid[i][j][k]);
+			}
+			HTMLstring+=textArray.join(", ");
+			HTMLstring+="</td>";
+		}
+		HTMLstring+="</tr>";
+	}
+	HTMLstring+="</table>";
+	document.getElementById("resultsGrid").innerHTML=HTMLstring;
+}
+</script>
+</head>
+<body onload="drawGrid();">
+<div id="resultsGrid"></div>
+<div style="margin-left: 10px">You can use this page to share this timetable.<br />
+(http://savvyshapes.appspot.com/{{ id }}).<br />This timetable was created with <a href="http://savvyshapes.appspot.com">SavvyShapes.</a></div>
+</body>
+</html>

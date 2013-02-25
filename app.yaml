@@ -1,0 +1,13 @@
+application: savvyshapes
+version: 1
+runtime: python
+api_version: 1
+
+handlers:
+
+- url: /help.htm
+  static_files: help.htm
+  upload: help.htm
+
+- url: /.*
+  script: savvyshapes.py
